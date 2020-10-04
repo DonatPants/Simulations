@@ -2,15 +2,14 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.animation import FuncAnimation
-from scipy.linalg import expm
+import matplotlib.animation as animation
 from scipy.special import jv
 
 
 # parameters of the simulation
 N = 101
 g = 0.001
-t = 1 # time scale of one iteration
+t = 0.05 # time scale of one iteration
 y_range = 0.6 # scale of y axis
 
 
@@ -36,20 +35,11 @@ def g_tilde(n, m, t):
     if n <= m:
         return (1j**(m-n))*np.exp(-(n-m-1)*g)*(jv(-(n-m-1), 2*t) - ((-1)**n) * jv(n + m + 1, 2*t))
     elif n > m:
-        return (1j**(n-m))*np.exp(-(n-m-1)*g)*(jv(-(n-m-1), 2*t) + ((-1)**m) * jv(n + m + 1, 2*t))
+        return (1j**(n-m))*np.exp(-(n-m-1)*g)*(jv((n-m-1), 2*t) + ((-1)**m) * jv(n + m + 1, 2*t))
 
     # should never happen
     raise TypeError("n and m should be integers, values given: n = " + str(n) + ", m = " + str(m))
 
-'''
-# generate the matrices for the hamiltonian
-Sr = [N*[0]]
-for i in range(0,N-1):
-    Sr.append(one_hot(N,i))
-Sr = np.matrix(Sr)
-Sl = Sr.T
-H = -(np.exp(-g)*Sr + np.exp(g)*Sl)
-'''
 
 # initial vector, zero everywhere, 1 at one point on the lattice
 vec1 = np.matrix(one_hot(N,0)).transpose()
@@ -71,11 +61,8 @@ ax3.set_ylim(-y_range**2,y_range**2)
 
 def animate(i):
     x = range(N)
-    '''
-    # propagator
-    mat1 = expm(t*i*1j*H)
-    '''
 
+    # compute the discrete wave function y for general initial conditions
     y = []
     for n in range(N):
         sum = 0
@@ -83,22 +70,16 @@ def animate(i):
             sum += 1j*g_tilde(n,m,i*t)*vec1[m]
         y.append(sum)
 
+    '''
+    # if vec1 is 0 everywhere other than for index 0 where it is 1, we can use this computation instead of the loop
+    y = [1j*g_tilde(n,0,i*t) for n in range(N)]
+    '''
+
     y = np.array(y)
+
     y1 = y.real
     y2 = y.imag
     y3 = abs(y)**2
-    '''
-    y1 = np.array(mat1*vec1).T.real[0]
-    y2 = np.array(mat1*vec1).T.imag[0]
-    y3 = abs(np.array(mat1*vec1).T)**2
-    '''
-    '''
-    print("x =",x)
-    print("y =",y)
-    print("y1 =",y1)
-    print("y2 =",y2)
-    print("y3 =",y3)
-    '''
 
     line[0].set_data(x, y1)
     line[1].set_data(x, y2)
@@ -107,6 +88,16 @@ def animate(i):
     return line
 
 # animate the plots
-animation = FuncAnimation(fig, func=animate, repeat=False, blit=True, frames=10000, interval=1)
+anim = animation.FuncAnimation(fig, func=animate, repeat=False, blit=True, frames=600, interval=1)
+
+
+#save the simulation
+'''
+path = r"E:\Files\Desktop\test\discrete sims\hard wall case green1.mp4"
+Writer = animation.writers['ffmpeg']
+writer = Writer(fps=60, metadata=dict(artist='Omer Levy'), bitrate=1800)
+anim.save(path, writer=writer)
+'''
+
 plt.show()
 

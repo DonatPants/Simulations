@@ -75,15 +75,16 @@ def animate(i):
     return line
 
 # animate the plots
-anim = animation.FuncAnimation(fig, func=animate, repeat=False, blit=True, frames=50, interval=1)
+anim = animation.FuncAnimation(fig, func=animate, repeat=False, blit=True, frames=300, interval=1)
 
 
 #save the simulation
-path = r"E:\Files\Desktop\simulations git\Simulations\discrete sims\test2.mp4"
+'''
+path = r"r"E:\Files\Desktop\test\discrete sims\hard wall case prop1.mp4""
 Writer = animation.writers['ffmpeg']
 writer = Writer(fps=60, metadata=dict(artist='Omer Levy'), bitrate=1800)
 anim.save(path, writer=writer)
-
+'''
 
 # show the simulation
 plt.show()
